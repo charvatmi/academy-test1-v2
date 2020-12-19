@@ -8,7 +8,6 @@ import os
 import sys
 import csv
 from pathlib import Path
-
 from kbc.env_handler import KBCEnvHandler
 
 # configuration variables
@@ -49,10 +48,6 @@ class Component(KBCEnvHandler):
         except ValueError as e:
             logging.exception(e)
             exit(1)
-        # ####### EXAMPLE TO REMOVE
-        # intialize instance parameteres
-
-        # ####### EXAMPLE TO REMOVE END
 
     def run(self):
         '''
@@ -91,6 +86,7 @@ class Component(KBCEnvHandler):
                                                 incremental=True)
 
         self.write_state_file({'last_updated': 'now'})
+
 
 """
         Main entrypoint

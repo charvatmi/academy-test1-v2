@@ -6,6 +6,7 @@ Template Component main class.
 import logging
 import os
 import sys
+import csv
 from pathlib import Path
 
 from kbc.env_handler import KBCEnvHandler
@@ -57,14 +58,39 @@ class Component(KBCEnvHandler):
         '''
         Main execution code
         '''
-        params = self.cfg_params  # noqa
 
-        # ####### EXAMPLE TO REMOVE
-        if params.get(KEY_PRINT_HELLO):
-            logging.info("Hello World")
+        last_state = self.get_state_file()
+        print(last_state.get('last_updated', ''))
 
-        # ####### EXAMPLE TO REMOVE END
+        table_defs = self.get_input_tables_definitions()
+        SOURCE_FILE_PATH = table_defs[0].full_path
 
+        RESULT_FILE_PATH = os.path.join(self.tables_out_path, 'output.csv')
+
+        config = self.cfg_params
+        PARAM_PRINT_LINES = config['print_rows']
+
+        print('Running...')
+        with open(SOURCE_FILE_PATH, 'r') as inp, open(RESULT_FILE_PATH, 'w+', newline='') as out:
+            reader = csv.DictReader(inp)
+            new_columns = reader.fieldnames
+            # append row number col
+            new_columns.append('row_number')
+            writer = csv.DictWriter(out, fieldnames=new_columns, lineterminator='\n', delimiter=',')
+            writer.writeheader()
+            for index, l in enumerate(reader):
+                # print line
+                if PARAM_PRINT_LINES:
+                    print(f'Printing line {index}: {l}')
+                # add row number
+                l['row_number'] = index
+                writer.writerow(l)
+
+        self.configuration.write_table_manifest(file_name=RESULT_FILE_PATH,
+                                                primary_key=['row_number'],
+                                                incremental=True)
+
+        self.write_state_file({'last_updated': 'now'})
 
 """
         Main entrypoint

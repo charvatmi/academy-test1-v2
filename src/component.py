@@ -1,6 +1,5 @@
 '''
 Template Component main class.
-
 '''
 
 import logging
